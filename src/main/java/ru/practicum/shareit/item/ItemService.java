@@ -6,7 +6,7 @@ import java.util.List;
 
 
 public interface ItemService {
-    public List<ItemDto> getAll(Long userId);
+    List<ItemDto> getAll(Long userId);
 
     ItemDto getById(Long itemId);
 

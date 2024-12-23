@@ -47,7 +47,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto create(UserDto userDto) {
-        if(isDistinctEmail(userDto.getEmail())){
+        if (isDistinctEmail(userDto.getEmail())) {
             return UserMapper.toUserDto(userRepository
                     .save(UserMapper.toUser(userDto)));
         } else {

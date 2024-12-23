@@ -1,6 +1,5 @@
 package ru.practicum.shareit;
 
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -124,7 +123,7 @@ class ShareItTests {
 
 	@Test
 	void search() {
-		ItemDto savedItemDto = itemService.create(testItemDto, savedUser.getId());
+		itemService.create(testItemDto, savedUser.getId());
 		List<ItemDto> items = itemService.searchByText("Some");
 		assertEquals(1, items.size());
 	}
