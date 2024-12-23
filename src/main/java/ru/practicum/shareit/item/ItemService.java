@@ -13,4 +13,8 @@ public interface ItemService {
     ItemDto editOne(Long id, ItemDto item, Long userId);
 
     List<ItemDto> searchByText(String text);
+
+    ItemDto create(ItemDto item, Long userId);
+
+    void clear();
 }

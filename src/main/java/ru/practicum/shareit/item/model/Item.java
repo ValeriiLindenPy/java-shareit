@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.dto.UserDto;
 
 
 @Data
@@ -28,7 +29,7 @@ public class Item {
     /**
      * владелец вещи
      */
-    private User owner;
+    private UserDto owner;
     /**
      * если вещь была создана по запросу другого пользователя, то в этом
      * поле будет храниться ссылка на соответствующий запрос
