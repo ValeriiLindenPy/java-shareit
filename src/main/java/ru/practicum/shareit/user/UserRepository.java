@@ -1,7 +1,4 @@
 package ru.practicum.shareit.user;
-
-
-
 import java.util.List;
 import java.util.Optional;
 
@@ -15,4 +12,6 @@ public interface UserRepository {
     void delete(Long id);
 
     void clear();
+
+    User update(User oldUser);
 }

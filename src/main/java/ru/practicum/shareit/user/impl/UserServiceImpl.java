@@ -42,21 +42,18 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        return UserMapper.toUserDto(userRepository.save(oldUser));
+        return UserMapper.toUserDto(userRepository.update(oldUser));
     }
 
     @Override
     public UserDto create(UserDto userDto) {
-        if (isDistinctEmail(userDto.getEmail())) {
-            return UserMapper.toUserDto(userRepository
-                    .save(UserMapper.toUser(userDto)));
-        } else {
+        if (!isDistinctEmail(userDto.getEmail())) {
             throw new DublicatingEmailException("User with email - %s is already exist"
                     .formatted(userDto.getEmail()));
         }
+        return UserMapper.toUserDto(userRepository
+                .save(UserMapper.toUser(userDto)));
     }
-
-
 
     @Override
     public void deleteById(Long id) {

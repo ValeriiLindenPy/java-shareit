@@ -16,4 +16,6 @@ public interface ItemRepository {
     List<Item> findAll();
 
     void clear();
+
+    Item update(Item newItem);
 }

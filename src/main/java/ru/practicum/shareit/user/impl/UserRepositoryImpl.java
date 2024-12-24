@@ -26,9 +26,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public User save(User user) {
-        if (user.getId() == null || user.getId() == 0) {
-            user.setId(getId());
-        }
+        user.setId(getId());
         users.put(user.getId(), user);
         return user;
     }
@@ -41,6 +39,12 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public void clear() {
         users.clear();
+    }
+
+    @Override
+    public User update(User user) {
+        users.put(user.getId(), user);
+        return user;
     }
 
     private Long getId() {

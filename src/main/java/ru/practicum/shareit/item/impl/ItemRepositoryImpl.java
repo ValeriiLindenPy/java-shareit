@@ -34,13 +34,16 @@ public class ItemRepositoryImpl implements ItemRepository {
 
     @Override
     public Item save(Item newItem) {
-        if (newItem.getId() == null || newItem.getId() == 0) {
-            newItem.setId(getId());
-        }
+        newItem.setId(getId());
         items.put(newItem.getId(), newItem);
         return newItem;
     }
 
+    @Override
+    public Item update(Item newItem) {
+        items.put(newItem.getId(), newItem);
+        return newItem;
+    }
 
     private Long getId() {
         Long currentId = items.values().stream()

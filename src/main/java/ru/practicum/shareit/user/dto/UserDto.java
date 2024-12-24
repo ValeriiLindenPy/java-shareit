@@ -10,12 +10,14 @@ import ru.practicum.shareit.error.ValidationMarker;
 @Data
 @Builder
 public class UserDto {
-    @Null(groups = ValidationMarker.OnCreate.class)
+    @Null(groups = ValidationMarker.OnCreate.class, message = "Id should be null")
     private Long id;
 
+    @NotBlank(groups = ValidationMarker.OnCreate.class, message = "Name can't be blank")
     private String name;
 
-    @Email(groups = {ValidationMarker.OnCreate.class, ValidationMarker.OnUpdate.class})
-    @NotBlank(groups = ValidationMarker.OnCreate.class, message = "Не указан email")
+    @Email(groups = {ValidationMarker.OnCreate.class, ValidationMarker.OnUpdate.class},
+            message = "Wrong email format")
+    @NotBlank(groups = ValidationMarker.OnCreate.class, message = "Email can't be blank")
     private String email;
 }
