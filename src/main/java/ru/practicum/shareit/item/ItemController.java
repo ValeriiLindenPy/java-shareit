@@ -30,12 +30,16 @@ public class ItemController {
     }
 
     @PatchMapping("/{id}")
-    public ItemDto getOne(@PathVariable Long id,@RequestBody ItemDto item, @RequestHeader("X-Sharer-User-Id") Long userId) {
+    public ItemDto editOne(@PathVariable Long id,
+                          @RequestBody ItemDto item,
+                          @RequestHeader("X-Sharer-User-Id") Long userId) {
         return itemService.editOne(id, item, userId);
     }
 
     @PostMapping
-    public ItemDto create(@Validated(ValidationMarker.OnCreate.class) @RequestBody ItemDto item, @RequestHeader("X-Sharer-User-Id") Long userId) {
+    public ItemDto create(@Validated(ValidationMarker.OnCreate.class)
+                          @RequestBody ItemDto item,
+                          @RequestHeader("X-Sharer-User-Id") Long userId) {
         return itemService.create(item, userId);
     }
 }

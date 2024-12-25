@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.error.ValidationMarker;
 import ru.practicum.shareit.user.dto.UserDto;
 
+
 @RestController
 @RequestMapping(path = "/users")
 @RequiredArgsConstructor
