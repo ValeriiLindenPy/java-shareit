@@ -32,6 +32,6 @@ public class User {
      */
     @Email
     @NotBlank
-    @Column(name = "email", unique = true)
+    @Column(name = "email", unique = true, length = 512)
     private String email;
 }
