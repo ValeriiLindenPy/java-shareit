@@ -8,7 +8,7 @@ import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.ItemService;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
@@ -76,12 +76,7 @@ public class ItemServiceImpl implements ItemService {
         }
         String lowerText = text.toLowerCase();
 
-        return itemRepository.findAll().stream()
-                .filter(Item::getAvailable)
-                .filter(item -> item.getName().toLowerCase().contains(lowerText)
-                        || item.getDescription().toLowerCase().contains(lowerText))
-                .map(ItemMapper::toItemDto)
-                .toList();
+        return itemRepository.search(lowerText).stream().map(ItemMapper::toItemDto).toList();
     }
 
     @Override

@@ -1,50 +1,43 @@
 package ru.practicum.shareit.booking;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import ru.practicum.shareit.booking.dto.BookingStatus;
-import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.user.User;
 
 import java.time.LocalDateTime;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
+@Table(name = "bookings")
 public class Booking {
-    /**
-     * уникальный идентификатор бронирования
-     */
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    /**
-     * дата и время начала бронирования
-     */
+
+    @Column(name = "start_date", nullable = false)
     private LocalDateTime start;
-    /**
-     * дата и время конца бронирования
-     */
+
+    @Column(name = "end_date", nullable = false)
     private LocalDateTime end;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_id", nullable = false)
     private Item item;
-    /**
-     * пользователь, который осуществляет бронирование
-     */
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "booker_id", nullable = false)
     private User booker;
-    /**
-     * статус бронирования. Может принимать одно из следующих
-     * значений:
-     * {@link BookingStatus#WAITING} — новое бронирование,ожидает одобрения,
-     * {@link BookingStatus#APPROVED} — бронирование подтверждено владельцем,
-     * {@link BookingStatus#REJECTED} — бронирование отклонено владельцем,
-     * {@link BookingStatus#CANCELED} — бронирование отменено создателем.
-     */
-    @Enumerated
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
     private BookingStatus status;
 }
