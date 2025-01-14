@@ -19,6 +19,7 @@ import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -97,17 +98,56 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingResponseDto getBooking(Long bookingId, Long userId) {
-        return null;
+
+
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(
+                () -> new NotFoundException("Booking with id - %d not found".formatted(bookingId))
+        );
+
+        if (!Objects.equals(booking.getBooker().getId(), userId) &&
+                !Objects.equals(booking.getItem().getOwner().getId(), userId)) {
+            throw new OwnerException("You are not the owner or booker of the item.");
+        }
+
+        return BookingMapper.toResponseDto(booking);
     }
 
     @Override
     public List<BookingResponseDto> getBookings(Long userId, BookingState state) {
-        return List.of();
+        userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User with id - %d not found"
+                        .formatted(userId))
+                );
+
+        return switch (state) {
+            case ALL -> bookingRepository.findAllByBookerId(userId).stream().map(BookingMapper::toResponseDto).toList();
+            case CURRENT -> bookingRepository.findCurrentBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
+            case PAST -> bookingRepository.findPastBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
+            case FUTURE -> bookingRepository.findFutureBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
+            case WAITING -> bookingRepository.findWaitingBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
+            case REJECTED -> bookingRepository.findRejectedBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
+        };
     }
 
     @Override
     public List<BookingResponseDto> getBookingsByOwnerItems(Long userId, BookingState state) {
-        return List.of();
+        userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User with id - %d not found"
+                        .formatted(userId))
+                );
+
+        itemRepository.findItemsByOwnerId(userId).stream().findFirst().orElseThrow(
+                () -> new OwnerException("You are not owner of any item.")
+        );
+
+        return switch (state) {
+            case ALL -> bookingRepository.findAllByBookerId(userId).stream().map(BookingMapper::toResponseDto).toList();
+            case CURRENT -> bookingRepository.findCurrentBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
+            case PAST -> bookingRepository.findPastBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
+            case FUTURE -> bookingRepository.findFutureBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
+            case WAITING -> bookingRepository.findWaitingBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
+            case REJECTED -> bookingRepository.findRejectedBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
+        };
     }
 
 
