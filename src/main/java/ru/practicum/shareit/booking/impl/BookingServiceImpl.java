@@ -11,10 +11,7 @@ import ru.practicum.shareit.booking.dto.BookingRequestDto;
 import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import ru.practicum.shareit.booking.enums.BookingState;
 import ru.practicum.shareit.booking.enums.BookingStatus;
-import ru.practicum.shareit.error.exception.BookingOverlapException;
-import ru.practicum.shareit.error.exception.DateValidationException;
-import ru.practicum.shareit.error.exception.NotFoundException;
-import ru.practicum.shareit.error.exception.UnavailableItemException;
+import ru.practicum.shareit.error.exception.*;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.user.User;
@@ -80,7 +77,22 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingResponseDto setApprove(Long bookingId, Long userId, Boolean approved) {
-        return null;
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(
+                () -> new NotFoundException("Booking with id - %d not found".formatted(bookingId))
+        );
+
+
+        if (!booking.getItem().getOwner().getId().equals(userId)) {
+            throw new OwnerException("You are not the owner of the item.");
+        }
+
+        if (approved) {
+            booking.setStatus(BookingStatus.APPROVED);
+        } else {
+            booking.setStatus(BookingStatus.REJECTED);
+        }
+
+        return BookingMapper.toResponseDto(bookingRepository.save(booking));
     }
 
     @Override

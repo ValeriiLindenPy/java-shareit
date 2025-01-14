@@ -18,7 +18,7 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler(OwnerException.class)
-    @ResponseStatus(HttpStatus.CONFLICT)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
     public ErrorResponse handleOwnerException(final RuntimeException e) {
         return new ErrorResponse(e.getMessage());
     }
