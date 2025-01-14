@@ -1,11 +1,9 @@
 package ru.practicum.shareit.item.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Null;
+
 import lombok.Builder;
 import lombok.Data;
-import ru.practicum.shareit.error.ValidationMarker;
+
 
 import java.time.LocalDateTime;
 

@@ -35,4 +35,9 @@ public class Comment {
 
     @Column(name = "created", nullable = false)
     private LocalDateTime created;
+
+    @PrePersist
+    private void setCreated() {
+        this.created = LocalDateTime.now();
+    }
 }

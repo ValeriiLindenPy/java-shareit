@@ -47,13 +47,8 @@ public class BookingServiceImpl implements BookingService {
         }
 
         if (bookingRequestDto.getStart().isAfter(bookingRequestDto.getEnd())) {
-            throw new DateValidationException("Start date must be before end date.");
+            throw new DateValidationException("Start date must be before end date.Start: " + bookingRequestDto.getStart());
         }
-
-        if (bookingRequestDto.getStart().isBefore(LocalDateTime.now())) {
-            throw new DateValidationException("Start date must be in the future.");
-        }
-
 
         boolean isItemAvailable = bookingRepository.findByItemAndTimeRange(
                 item.getId(),

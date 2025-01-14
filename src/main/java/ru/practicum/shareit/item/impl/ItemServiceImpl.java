@@ -10,8 +10,7 @@ import ru.practicum.shareit.error.exception.OwnerException;
 import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.ItemService;
-import ru.practicum.shareit.item.comment.CommentRequestDto;
-import ru.practicum.shareit.item.comment.CommentRespondDto;
+import ru.practicum.shareit.item.comment.*;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.dto.ItemOwnerDto;
@@ -31,6 +30,7 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
+    private final CommentRepository commentRepository;
 
     @Override
     public List<ItemOwnerDto> getAll(Long userId) {
@@ -138,7 +138,24 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public CommentRespondDto createComment(CommentRequestDto commentRequestDto, Long userId, Long itemId) {
-        return null;
+        User author = userRepository.findById(userId).orElseThrow(
+                () -> new NotFoundException("User with id - %d not found"
+                        .formatted(userId))
+        );
+
+        Item item = itemRepository.findById(itemId).orElseThrow(
+                () -> new NotFoundException("Item with id - %d not found"
+                        .formatted(itemId))
+        );
+
+        Comment comment = Comment.builder()
+                .author(author)
+                .text(commentRequestDto.getText())
+                .item(item)
+                .build();
+
+
+        return CommentMapper.toRespondDto(commentRepository.save(comment));
     }
 
 
