@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -31,4 +30,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     @Query("SELECT b FROM Booking b WHERE b.booker.id = ?1 and b.status = 'REJECTED' order by b.start DESC")
     List<Booking> findRejectedBookings(Long userId, LocalDateTime now);
+
+    @Query("SELECT b FROM Booking b WHERE b.item.id IN ?1")
+    List<Booking> findByItemId(List<Long> itemIds);
 }

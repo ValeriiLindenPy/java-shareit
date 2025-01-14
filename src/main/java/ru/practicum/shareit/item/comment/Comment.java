@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.user.User;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @Entity
@@ -30,4 +32,7 @@ public class Comment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
+
+    @Column(name = "created", nullable = false)
+    private LocalDateTime created;
 }

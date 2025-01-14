@@ -3,30 +3,74 @@ package ru.practicum.shareit.item.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.error.exception.NotFoundException;
 import ru.practicum.shareit.error.exception.OwnerException;
 import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.ItemService;
+import ru.practicum.shareit.item.comment.CommentRequestDto;
+import ru.practicum.shareit.item.comment.CommentRespondDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.Item;
+import ru.practicum.shareit.item.dto.ItemOwnerDto;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
+import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+    private final BookingRepository bookingRepository;
 
     @Override
-    public List<ItemDto> getAll(Long userId) {
+    public List<ItemOwnerDto> getAll(Long userId) {
         isUserExist(userId);
-        return itemRepository.findItemsByOwnerId(userId).stream()
-                .map(ItemMapper::toItemDto).toList();
+
+        List<Item> items = itemRepository.findItemsByOwnerId(userId);
+
+        // Извлекаем идентификаторы вещей
+        List<Long> itemIds = items.stream()
+                .map(Item::getId)
+                .collect(Collectors.toList());
+
+        // Получаем все бронирования для этих вещей одним запросом
+        List<Booking> bookings = bookingRepository.findByItemId(itemIds);
+
+        // Группируем бронирования по идентификатору вещи (не знаю как лучше так или через репозиторий)
+        Map<Long, List<Booking>> bookingsByItemId = bookings.stream()
+                .collect(Collectors.groupingBy(booking -> booking.getItem().getId()));
+
+        // Преобразуем список вещей в DTO с добавлением информации о бронированиях
+        return items.stream().map(item -> {
+            List<Booking> itemBookings = bookingsByItemId.getOrDefault(item.getId(), Collections.emptyList());
+
+            // Определяем даты последнего и ближайшего бронирования
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime lastBooking = itemBookings.stream()
+                    .filter(booking -> booking.getEnd().isBefore(now))
+                    .map(Booking::getEnd)
+                    .max(LocalDateTime::compareTo)
+                    .orElse(null);
+
+            LocalDateTime nextBooking = itemBookings.stream()
+                    .filter(booking -> booking.getStart().isAfter(now))
+                    .map(Booking::getStart)
+                    .min(LocalDateTime::compareTo)
+                    .orElse(null);
+
+
+            return ItemMapper.toItemOwnerDto(item, lastBooking, nextBooking);
+        }).collect(Collectors.toList());
     }
 
     @Override
@@ -90,6 +134,11 @@ public class ItemServiceImpl implements ItemService {
                 )
         );
         return ItemMapper.toItemDto(itemRepository.save(newItem));
+    }
+
+    @Override
+    public CommentRespondDto createComment(CommentRequestDto commentRequestDto, Long userId, Long itemId) {
+        return null;
     }
 
 
