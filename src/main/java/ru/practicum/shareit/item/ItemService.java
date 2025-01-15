@@ -9,9 +9,9 @@ import java.util.List;
 
 
 public interface ItemService {
-    List<ItemOwnerDto> getAll(Long userId);
+    List<ItemDto> getAll(Long userId);
 
-    ItemDto getById(Long itemId);
+    ItemOwnerDto getById(Long itemId);
 
     ItemDto editOne(Long id, ItemDto item, Long userId);
 
@@ -20,4 +20,6 @@ public interface ItemService {
     ItemDto create(ItemDto item, Long userId);
 
     CommentRespondDto createComment(CommentRequestDto commentRequestDto, Long userId, Long itemId);
+
+    ItemOwnerDto getByIdAndOwnerId(Long id, Long userId);
 }

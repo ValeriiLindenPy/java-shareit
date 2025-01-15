@@ -18,12 +18,15 @@ public class ItemController {
     public final ItemService itemService;
 
     @GetMapping
-    public List<ItemOwnerDto> getAll(@RequestHeader("X-Sharer-User-Id") Long userId) {
+    public List<ItemDto> getAll(@RequestHeader("X-Sharer-User-Id") Long userId) {
         return itemService.getAll(userId);
     }
 
     @GetMapping("/{id}")
-    public ItemDto getOne(@PathVariable Long id) {
+    public ItemOwnerDto getOne(@RequestHeader(value = "X-Sharer-User-Id", required = false) Long userId, @PathVariable Long id) {
+        if (userId != null) {
+            return itemService.getByIdAndOwnerId(id, userId);
+        }
         return itemService.getById(id);
     }
 

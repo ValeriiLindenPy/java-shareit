@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
@@ -31,6 +32,10 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("SELECT b FROM Booking b WHERE b.booker.id = ?1 and b.status = 'REJECTED' order by b.start DESC")
     List<Booking> findRejectedBookings(Long userId, LocalDateTime now);
 
-    @Query("SELECT b FROM Booking b WHERE b.item.id IN ?1")
-    List<Booking> findByItemId(List<Long> itemIds);
+    @Query("SELECT b FROM Booking b WHERE b.item.id = ?1 AND b.end < ?2 ORDER BY b.end DESC")
+    Optional<Booking> findLastBooking(Long itemId, LocalDateTime now);
+
+    @Query("SELECT b FROM Booking b WHERE b.item.id = ?1 AND b.start > ?2 ORDER BY b.start ASC")
+    Optional<Booking> findNextBooking(Long itemId, LocalDateTime now);
+
 }

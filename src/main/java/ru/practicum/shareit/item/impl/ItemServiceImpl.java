@@ -3,7 +3,6 @@ package ru.practicum.shareit.item.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.error.exception.NotFoundException;
 import ru.practicum.shareit.error.exception.OwnerException;
@@ -16,13 +15,10 @@ import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.dto.ItemOwnerDto;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
-
+import ru.practicum.shareit.booking.Booking;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,50 +29,16 @@ public class ItemServiceImpl implements ItemService {
     private final CommentRepository commentRepository;
 
     @Override
-    public List<ItemOwnerDto> getAll(Long userId) {
+    public List<ItemDto> getAll(Long userId) {
         isUserExist(userId);
-
-        List<Item> items = itemRepository.findItemsByOwnerId(userId);
-
-        // Извлекаем идентификаторы вещей
-        List<Long> itemIds = items.stream()
-                .map(Item::getId)
-                .collect(Collectors.toList());
-
-        // Получаем все бронирования для этих вещей одним запросом
-        List<Booking> bookings = bookingRepository.findByItemId(itemIds);
-
-        // Группируем бронирования по идентификатору вещи (не знаю как лучше так или через репозиторий)
-        Map<Long, List<Booking>> bookingsByItemId = bookings.stream()
-                .collect(Collectors.groupingBy(booking -> booking.getItem().getId()));
-
-        // Преобразуем список вещей в DTO с добавлением информации о бронированиях
-        return items.stream().map(item -> {
-            List<Booking> itemBookings = bookingsByItemId.getOrDefault(item.getId(), Collections.emptyList());
-
-            // Определяем даты последнего и ближайшего бронирования
-            LocalDateTime now = LocalDateTime.now();
-            LocalDateTime lastBooking = itemBookings.stream()
-                    .filter(booking -> booking.getEnd().isBefore(now))
-                    .map(Booking::getEnd)
-                    .max(LocalDateTime::compareTo)
-                    .orElse(null);
-
-            LocalDateTime nextBooking = itemBookings.stream()
-                    .filter(booking -> booking.getStart().isAfter(now))
-                    .map(Booking::getStart)
-                    .min(LocalDateTime::compareTo)
-                    .orElse(null);
-
-
-            return ItemMapper.toItemOwnerDto(item, lastBooking, nextBooking);
-        }).collect(Collectors.toList());
+        return itemRepository.findItemsByOwnerId(userId).stream()
+                .map(ItemMapper::toItemDto).toList();
     }
 
     @Override
-    public ItemDto getById(Long itemId) {
+    public ItemOwnerDto getById(Long itemId) {
         return itemRepository.findById(itemId)
-                .map(ItemMapper::toItemDto)
+                .map(item -> ItemMapper.toItemOwnerDto(item, null, null))
                 .orElseThrow(
                         () -> new NotFoundException("Item with id - %d not found"
                                 .formatted(itemId))
@@ -156,6 +118,36 @@ public class ItemServiceImpl implements ItemService {
 
 
         return CommentMapper.toRespondDto(commentRepository.save(comment));
+    }
+
+    @Override
+    public ItemOwnerDto getByIdAndOwnerId(Long id, Long userId) {
+
+        Item item = itemRepository.findById(id).orElseThrow(
+                () -> new NotFoundException("Item with id - %d not found"
+                        .formatted(id))
+        );
+
+        if (!Objects.equals(item.getOwner().getId(), userId)) {
+            throw new OwnerException("Item with id %d does not belong to user with id %d"
+                    .formatted(id, userId));
+        }
+
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime lastBookingDate = bookingRepository.findLastBooking(item.getId(), now)
+                .map(Booking::getEnd)
+                .orElse(null);
+
+        LocalDateTime nextBookingDate = bookingRepository.findNextBooking(item.getId(), now)
+                .map(Booking::getStart)
+                .orElse(null);
+
+        ItemOwnerDto itemOwnerDto = ItemMapper.toItemOwnerDto(item, lastBookingDate, nextBookingDate);
+
+        itemOwnerDto.setComments(commentRepository.findByItemId(item.getId()));
+
+        return itemOwnerDto;
     }
 
 
