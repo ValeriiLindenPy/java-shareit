@@ -103,7 +103,7 @@ public class ItemServiceImpl implements ItemService {
         );
 
         boolean isBooked = bookingRepository.findPastBookings(author.getId(), LocalDateTime.now()).stream()
-                .anyMatch(booking -> Objects.equals(booking.getItem().getId(), itemId) );
+                .anyMatch(booking -> Objects.equals(booking.getItem().getId(), itemId));
 
         log.info("Booking was {}", isBooked);
 

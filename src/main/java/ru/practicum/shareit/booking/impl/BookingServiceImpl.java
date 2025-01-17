@@ -42,7 +42,7 @@ public class BookingServiceImpl implements BookingService {
                 .formatted(bookingRequestDto.getItemId()))
         );
 
-        if(!item.getAvailable()) {
+        if (!item.getAvailable()) {
             throw new UnavailableItemException("This item is not available for booking!");
         }
 
@@ -68,7 +68,7 @@ public class BookingServiceImpl implements BookingService {
                 .booker(booker)
                 .build();
 
-        return BookingMapper.toResponseDto(bookingRepository.save(booking)) ;
+        return BookingMapper.toResponseDto(bookingRepository.save(booking));
     }
 
     @Override
@@ -116,11 +116,16 @@ public class BookingServiceImpl implements BookingService {
 
         return switch (state) {
             case ALL -> bookingRepository.findAllByBookerId(userId).stream().map(BookingMapper::toResponseDto).toList();
-            case CURRENT -> bookingRepository.findCurrentBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
-            case PAST -> bookingRepository.findPastBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
-            case FUTURE -> bookingRepository.findFutureBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
-            case WAITING -> bookingRepository.findWaitingBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
-            case REJECTED -> bookingRepository.findRejectedBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
+            case CURRENT ->
+                    bookingRepository.findCurrentBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
+            case PAST ->
+                    bookingRepository.findPastBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
+            case FUTURE ->
+                    bookingRepository.findFutureBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
+            case WAITING ->
+                    bookingRepository.findWaitingBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
+            case REJECTED ->
+                    bookingRepository.findRejectedBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
         };
     }
 
@@ -137,11 +142,16 @@ public class BookingServiceImpl implements BookingService {
 
         return switch (state) {
             case ALL -> bookingRepository.findAllByBookerId(userId).stream().map(BookingMapper::toResponseDto).toList();
-            case CURRENT -> bookingRepository.findCurrentBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
-            case PAST -> bookingRepository.findPastBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
-            case FUTURE -> bookingRepository.findFutureBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
-            case WAITING -> bookingRepository.findWaitingBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
-            case REJECTED -> bookingRepository.findRejectedBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
+            case CURRENT ->
+                    bookingRepository.findCurrentBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
+            case PAST ->
+                    bookingRepository.findPastBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
+            case FUTURE ->
+                    bookingRepository.findFutureBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
+            case WAITING ->
+                    bookingRepository.findWaitingBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
+            case REJECTED ->
+                    bookingRepository.findRejectedBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
         };
     }
 }
