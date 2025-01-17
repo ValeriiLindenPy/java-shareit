@@ -7,8 +7,6 @@ import ru.practicum.shareit.booking.dto.BookingRequestDto;
 import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import ru.practicum.shareit.booking.enums.BookingState;
 import ru.practicum.shareit.error.ValidationMarker;
-
-
 import java.util.List;
 
 @RestController

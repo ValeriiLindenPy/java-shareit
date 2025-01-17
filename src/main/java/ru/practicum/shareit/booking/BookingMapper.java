@@ -17,5 +17,4 @@ public class BookingMapper {
                 .booker(UserMapper.toUserDto(booking.getBooker()))
                 .build();
     }
-
 }

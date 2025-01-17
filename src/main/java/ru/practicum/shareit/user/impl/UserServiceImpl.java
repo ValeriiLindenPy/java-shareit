@@ -61,7 +61,6 @@ public class UserServiceImpl implements UserService {
         userRepository.deleteById(id);
     }
 
-
     private boolean isDistinctEmail(String email) {
         return userRepository.findAll().stream()
                 .noneMatch(user -> user.getEmail().equals(email));

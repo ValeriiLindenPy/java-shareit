@@ -1,6 +1,5 @@
 package ru.practicum.shareit.item.comment;
 
-
 public class CommentMapper  {
 
     public static CommentRespondDto toRespondDto (Comment comment) {

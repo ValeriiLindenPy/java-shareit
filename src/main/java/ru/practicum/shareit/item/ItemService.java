@@ -11,8 +11,6 @@ import java.util.List;
 public interface ItemService {
     List<ItemDto> getAll(Long userId);
 
-    ItemOwnerDto getById(Long itemId);
-
     ItemDto editOne(Long id, ItemDto item, Long userId);
 
     List<ItemDto> searchByText(String text);

@@ -144,6 +144,4 @@ public class BookingServiceImpl implements BookingService {
             case REJECTED -> bookingRepository.findRejectedBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
         };
     }
-
-
 }

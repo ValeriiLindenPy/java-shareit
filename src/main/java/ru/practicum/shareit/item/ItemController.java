@@ -24,10 +24,7 @@ public class ItemController {
 
     @GetMapping("/{id}")
     public ItemOwnerDto getOne(@RequestHeader(value = "X-Sharer-User-Id", required = false) Long userId, @PathVariable Long id) {
-        if (userId != null) {
-            return itemService.getByIdAndOwnerId(id, userId);
-        }
-        return itemService.getById(id);
+        return itemService.getByIdAndOwnerId(id, userId);
     }
 
     @GetMapping("/search")

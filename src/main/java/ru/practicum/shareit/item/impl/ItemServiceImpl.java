@@ -1,9 +1,11 @@
 package ru.practicum.shareit.item.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.error.exception.BookingException;
 import ru.practicum.shareit.error.exception.NotFoundException;
 import ru.practicum.shareit.error.exception.OwnerException;
 import ru.practicum.shareit.item.ItemMapper;
@@ -22,6 +24,7 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
@@ -34,17 +37,6 @@ public class ItemServiceImpl implements ItemService {
         return itemRepository.findItemsByOwnerId(userId).stream()
                 .map(ItemMapper::toItemDto).toList();
     }
-
-    @Override
-    public ItemOwnerDto getById(Long itemId) {
-        return itemRepository.findById(itemId)
-                .map(item -> ItemMapper.toItemOwnerDto(item, null, null))
-                .orElseThrow(
-                        () -> new NotFoundException("Item with id - %d not found"
-                                .formatted(itemId))
-                );
-    }
-
 
     @Override
     public ItemDto editOne(Long id, ItemDto item, Long userId) {
@@ -110,6 +102,16 @@ public class ItemServiceImpl implements ItemService {
                         .formatted(itemId))
         );
 
+        boolean isBooked = bookingRepository.findPastBookings(author.getId(), LocalDateTime.now()).stream()
+                .anyMatch(booking -> Objects.equals(booking.getItem().getId(), itemId) );
+
+        log.info("Booking was {}", isBooked);
+
+        if (!isBooked) {
+            throw new BookingException("User didn't book this item!");
+        }
+
+
         Comment comment = Comment.builder()
                 .author(author)
                 .text(commentRequestDto.getText())
@@ -128,10 +130,6 @@ public class ItemServiceImpl implements ItemService {
                         .formatted(id))
         );
 
-        if (!Objects.equals(item.getOwner().getId(), userId)) {
-            throw new OwnerException("Item with id %d does not belong to user with id %d"
-                    .formatted(id, userId));
-        }
 
 
         LocalDateTime now = LocalDateTime.now();
@@ -145,11 +143,11 @@ public class ItemServiceImpl implements ItemService {
 
         ItemOwnerDto itemOwnerDto = ItemMapper.toItemOwnerDto(item, lastBookingDate, nextBookingDate);
 
-        itemOwnerDto.setComments(commentRepository.findByItemId(item.getId()));
+        itemOwnerDto.setComments(commentRepository.findByItemId(item.getId())
+                .stream().map(CommentMapper::toRespondDto).toList());
 
         return itemOwnerDto;
     }
-
 
     private void isUserExist(Long userId) {
         userRepository.findById(userId)
