@@ -8,8 +8,8 @@ import java.util.List;
 
 @Repository
 public interface ItemRepository extends JpaRepository<Item, Long> {
-    @Query("select it from Item as it join fetch it.owner as o where o.id = ?1")
-    List<Item> findItemsByOwnerId(Long userId);
+
+    List<Item> findByOwnerId(Long ownerId);
 
     @Query(" select i from Item i " +
             "where i.available = true " +

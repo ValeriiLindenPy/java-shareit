@@ -50,7 +50,7 @@ public class BookingServiceImpl implements BookingService {
             throw new DateValidationException("Start date must be before end date.Start: " + bookingRequestDto.getStart());
         }
 
-        boolean isItemAvailable = bookingRepository.findByItemAndTimeRange(
+        boolean isItemAvailable = bookingRepository.findOverlappingBookings(
                 item.getId(),
                 bookingRequestDto.getStart(),
                 bookingRequestDto.getEnd()
@@ -77,37 +77,36 @@ public class BookingServiceImpl implements BookingService {
                 () -> new NotFoundException("Booking with id - %d not found".formatted(bookingId))
         );
 
-
         if (!booking.getItem().getOwner().getId().equals(userId)) {
             throw new OwnerException("You are not the owner of the item.");
         }
 
-        if (approved) {
-            booking.setStatus(BookingStatus.APPROVED);
+        if (booking.getStatus().equals(BookingStatus.WAITING)) {
+            if (approved) {
+                booking.setStatus(BookingStatus.APPROVED);
+            } else {
+                booking.setStatus(BookingStatus.REJECTED);
+            }
         } else {
-            booking.setStatus(BookingStatus.REJECTED);
+            throw new BookingException("To set booking status it should be WAITING.");
         }
 
         return BookingMapper.toResponseDto(bookingRepository.save(booking));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public BookingResponseDto getBooking(Long bookingId, Long userId) {
 
-
-        Booking booking = bookingRepository.findById(bookingId).orElseThrow(
-                () -> new NotFoundException("Booking with id - %d not found".formatted(bookingId))
+        Booking booking = bookingRepository.findByIdAndUserId(bookingId, userId).orElseThrow(
+                () -> new NotFoundException("Booking with id - %d not found or access denied".formatted(bookingId))
         );
-
-        if (!Objects.equals(booking.getBooker().getId(), userId) &&
-                !Objects.equals(booking.getItem().getOwner().getId(), userId)) {
-            throw new OwnerException("You are not the owner or booker of the item.");
-        }
 
         return BookingMapper.toResponseDto(booking);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<BookingResponseDto> getBookings(Long userId, BookingState state) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User with id - %d not found"
@@ -115,7 +114,7 @@ public class BookingServiceImpl implements BookingService {
                 );
 
         return switch (state) {
-            case ALL -> bookingRepository.findAllByBookerId(userId).stream().map(BookingMapper::toResponseDto).toList();
+            case ALL -> bookingRepository.findByBookerIdOrderByStartDesc(userId).stream().map(BookingMapper::toResponseDto).toList();
             case CURRENT ->
                     bookingRepository.findCurrentBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
             case PAST ->
@@ -123,25 +122,26 @@ public class BookingServiceImpl implements BookingService {
             case FUTURE ->
                     bookingRepository.findFutureBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
             case WAITING ->
-                    bookingRepository.findWaitingBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
+                    bookingRepository.findByBookerIdAndStatusOrderByStartDesc(userId, BookingStatus.WAITING).stream().map(BookingMapper::toResponseDto).toList();
             case REJECTED ->
-                    bookingRepository.findRejectedBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
+                    bookingRepository.findByBookerIdAndStatusOrderByStartDesc(userId, BookingStatus.REJECTED).stream().map(BookingMapper::toResponseDto).toList();
         };
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<BookingResponseDto> getBookingsByOwnerItems(Long userId, BookingState state) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User with id - %d not found"
                         .formatted(userId))
                 );
 
-        itemRepository.findItemsByOwnerId(userId).stream().findFirst().orElseThrow(
+        itemRepository.findByOwnerId(userId).stream().findFirst().orElseThrow(
                 () -> new OwnerException("You are not owner of any item.")
         );
 
         return switch (state) {
-            case ALL -> bookingRepository.findAllByBookerId(userId).stream().map(BookingMapper::toResponseDto).toList();
+            case ALL -> bookingRepository.findByBookerIdOrderByStartDesc(userId).stream().map(BookingMapper::toResponseDto).toList();
             case CURRENT ->
                     bookingRepository.findCurrentBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
             case PAST ->
@@ -149,9 +149,9 @@ public class BookingServiceImpl implements BookingService {
             case FUTURE ->
                     bookingRepository.findFutureBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
             case WAITING ->
-                    bookingRepository.findWaitingBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
+                    bookingRepository.findByBookerIdAndStatusOrderByStartDesc(userId, BookingStatus.WAITING).stream().map(BookingMapper::toResponseDto).toList();
             case REJECTED ->
-                    bookingRepository.findRejectedBookings(userId, LocalDateTime.now()).stream().map(BookingMapper::toResponseDto).toList();
+                    bookingRepository.findByBookerIdAndStatusOrderByStartDesc(userId, BookingStatus.REJECTED).stream().map(BookingMapper::toResponseDto).toList();
         };
     }
 }

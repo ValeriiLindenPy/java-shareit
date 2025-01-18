@@ -15,23 +15,14 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "users")
 public class User {
-    /**
-     *  уникальный идентификатор пользователя
-     */
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    /**
-     *  имя или логин пользователя
-     */
+
     @Column(name = "name")
-    @NotBlank
     private String name;
-    /**
-     * уникальный адрес электронной почты
-     */
-    @Email
-    @NotBlank
+
     @Column(name = "email", unique = true, length = 512)
     private String email;
 }

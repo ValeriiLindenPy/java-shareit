@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.booking.enums.BookingStatus;
 import ru.practicum.shareit.error.exception.BookingException;
 import ru.practicum.shareit.error.exception.NotFoundException;
 import ru.practicum.shareit.error.exception.OwnerException;
@@ -18,6 +19,7 @@ import ru.practicum.shareit.item.dto.ItemOwnerDto;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.booking.Booking;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -34,7 +36,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<ItemDto> getAll(Long userId) {
         isUserExist(userId);
-        return itemRepository.findItemsByOwnerId(userId).stream()
+        return itemRepository.findByOwnerId(userId).stream()
                 .map(ItemMapper::toItemDto).toList();
     }
 
@@ -93,31 +95,26 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public CommentRespondDto createComment(CommentRequestDto commentRequestDto, Long userId, Long itemId) {
         User author = userRepository.findById(userId).orElseThrow(
-                () -> new NotFoundException("User with id - %d not found"
-                        .formatted(userId))
+                () -> new NotFoundException("User with id - %d not found".formatted(userId))
         );
 
         Item item = itemRepository.findById(itemId).orElseThrow(
-                () -> new NotFoundException("Item with id - %d not found"
-                        .formatted(itemId))
+                () -> new NotFoundException("Item with id - %d not found".formatted(itemId))
         );
 
         boolean isBooked = bookingRepository.findPastBookings(author.getId(), LocalDateTime.now()).stream()
-                .anyMatch(booking -> Objects.equals(booking.getItem().getId(), itemId));
-
-        log.info("Booking was {}", isBooked);
+                .anyMatch(booking ->  Objects.equals(booking.getItem().getId(), itemId)
+                            && booking.getStatus() == BookingStatus.APPROVED);
 
         if (!isBooked) {
-            throw new BookingException("User didn't book this item!");
+            throw new BookingException("User didn't book this item or booking is not canceled!");
         }
-
 
         Comment comment = Comment.builder()
                 .author(author)
                 .text(commentRequestDto.getText())
                 .item(item)
                 .build();
-
 
         return CommentMapper.toRespondDto(commentRepository.save(comment));
     }
@@ -129,8 +126,6 @@ public class ItemServiceImpl implements ItemService {
                 () -> new NotFoundException("Item with id - %d not found"
                         .formatted(id))
         );
-
-
 
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime lastBookingDate = bookingRepository.findLastBooking(item.getId(), now)
