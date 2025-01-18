@@ -16,7 +16,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "WHERE b.item.id = ?1 " +
             "AND b.start < ?3 " +
             "AND b.end > ?2")
-    List<Booking> findOverlappingBookings( Long id, LocalDateTime start, LocalDateTime end);
+    List<Booking> findOverlappingBookings(Long id, LocalDateTime start, LocalDateTime end);
 
     @Query("SELECT b FROM Booking b WHERE b.booker.id = ?1 and b.start <= ?2 and b.end >= ?2 order by b.start DESC")
     List<Booking> findCurrentBookings(Long userId, LocalDateTime now);
