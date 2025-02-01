@@ -1,0 +1,17 @@
+D:\Yandex\Projects\java-shareit\gateway\src\main\java\ru\practicum\shareit\booking\BookingClient.java
+D:\Yandex\Projects\java-shareit\gateway\src\main\java\ru\practicum\shareit\booking\BookingController.java
+D:\Yandex\Projects\java-shareit\gateway\src\main\java\ru\practicum\shareit\booking\dto\BookingState.java
+D:\Yandex\Projects\java-shareit\gateway\src\main\java\ru\practicum\shareit\booking\dto\BookItemRequestDto.java
+D:\Yandex\Projects\java-shareit\gateway\src\main\java\ru\practicum\shareit\client\BaseClient.java
+D:\Yandex\Projects\java-shareit\gateway\src\main\java\ru\practicum\shareit\error\ValidationMarker.java
+D:\Yandex\Projects\java-shareit\gateway\src\main\java\ru\practicum\shareit\item\comment\CommentRequestDto.java
+D:\Yandex\Projects\java-shareit\gateway\src\main\java\ru\practicum\shareit\item\dto\ItemDto.java
+D:\Yandex\Projects\java-shareit\gateway\src\main\java\ru\practicum\shareit\item\ItemClient.java
+D:\Yandex\Projects\java-shareit\gateway\src\main\java\ru\practicum\shareit\item\ItemController.java
+D:\Yandex\Projects\java-shareit\gateway\src\main\java\ru\practicum\shareit\request\dto\RequestInputDto.java
+D:\Yandex\Projects\java-shareit\gateway\src\main\java\ru\practicum\shareit\request\ItemRequestClient.java
+D:\Yandex\Projects\java-shareit\gateway\src\main\java\ru\practicum\shareit\request\ItemRequestController.java
+D:\Yandex\Projects\java-shareit\gateway\src\main\java\ru\practicum\shareit\ShareItGateway.java
+D:\Yandex\Projects\java-shareit\gateway\src\main\java\ru\practicum\shareit\user\dto\UserDto.java
+D:\Yandex\Projects\java-shareit\gateway\src\main\java\ru\practicum\shareit\user\UserClient.java
+D:\Yandex\Projects\java-shareit\gateway\src\main\java\ru\practicum\shareit\user\UserController.java

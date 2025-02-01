@@ -1,0 +1,5 @@
+ru\practicum\shareit\user\UserControllerTest.class
+ru\practicum\shareit\request\impl\ItemRequestServiceImplTest.class
+ru\practicum\shareit\booking\impl\BookingServiceImplTest.class
+ru\practicum\shareit\item\impl\ItemServiceImplTest.class
+ru\practicum\shareit\user\impl\UserServiceImplTest.class
