@@ -5,70 +5,114 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.error.exception.DublicatingEmailException;
+import ru.practicum.shareit.error.exception.NotFoundException;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
-import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.dto.UserDto;
 
-import java.util.List;
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 @ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @Transactional
 class UserServiceImplTest {
-    @MockBean
-    private UserRepository userRepository;
 
     @Autowired
-    private UserService userService;
+    private UserServiceImpl userService;
 
-    private User user;
+    @Autowired
+    private UserRepository userRepository;
+
+    private User user1;
+    private User user2;
 
     @BeforeEach
     void setup() {
-        user = User.builder()
-                .email("test@mail.com")
+        userRepository.deleteAll();
+
+        user1 = userRepository.save(User.builder()
                 .name("Sam")
-                .build();
+                .email("sam@mail.com")
+                .build());
 
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
-            User savedUser = invocation.getArgument(0);
-            if (savedUser == null) {
-                throw new IllegalArgumentException("Saved user cannot be null");
-            }
-            savedUser.setId(1L);
-            return savedUser;
-        });
-
-        when(userRepository.findById(any(Long.class))).thenReturn(Optional.of(user));
-        when(userRepository.findAll()).thenReturn(List.of(user));
-
-        user = userRepository.save(user);
+        user2 = userRepository.save(User.builder()
+                .name("Alice")
+                .email("alice@mail.com")
+                .build());
     }
 
     @Test
-    void whenEditById_ReturnNewDataUser() {
-        UserDto newUser = UserDto.builder()
-                .email("new@mail.com")
-                .name("NewName")
+    void whenGetById_thenReturnUserDto() {
+        UserDto found = userService.getById(user1.getId());
+        assertNotNull(found);
+        assertEquals(user1.getId(), found.getId());
+        assertEquals(user1.getName(), found.getName());
+        assertEquals(user1.getEmail(), found.getEmail());
+    }
+
+    @Test
+    void whenGetByIdForNonExistingUser_thenThrowNotFoundException() {
+        long nonExistingId = 999L;
+        NotFoundException exception = assertThrows(NotFoundException.class,
+                () -> userService.getById(nonExistingId));
+        assertTrue(exception.getMessage().contains(String.valueOf(nonExistingId)));
+    }
+
+    @Test
+    void whenEditById_thenReturnEditedUserDto() {
+        UserDto update = UserDto.builder()
+                .name("Samuel")
+                .email("samuel@mail.com")
+                .build();
+        UserDto updated = userService.editById(user1.getId(), update);
+        assertNotNull(updated);
+        assertEquals("Samuel", updated.getName());
+        assertEquals("samuel@mail.com", updated.getEmail());
+    }
+
+    @Test
+    void whenEditByIdWithDuplicateEmail_thenThrowDublicatingEmailException() {
+        UserDto update = UserDto.builder()
+                .email(user2.getEmail())
                 .build();
 
-        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
-        when(userRepository.save(any())).thenReturn(user);
+        DublicatingEmailException exception = assertThrows(DublicatingEmailException.class,
+                () -> userService.editById(user1.getId(), update));
+        assertTrue(exception.getMessage().contains(user2.getEmail()));
+    }
 
-        UserDto editedUser = userService.editById(user.getId(), newUser);
+    @Test
+    void whenCreateUser_thenReturnCreatedUserDto() {
+        UserDto newUser = UserDto.builder()
+                .name("Bob")
+                .email("bob@mail.com")
+                .build();
+        UserDto created = userService.create(newUser);
+        assertNotNull(created);
+        assertNotNull(created.getId());
+        assertEquals("Bob", created.getName());
+        assertEquals("bob@mail.com", created.getEmail());
+    }
 
-        assertNotNull(editedUser);
-        assertEquals(user.getId(), editedUser.getId());
+    @Test
+    void whenCreateUserWithDuplicateEmail_thenThrowDublicatingEmailException() {
+        UserDto newUser = UserDto.builder()
+                .name("Another Sam")
+                .email(user1.getEmail())
+                .build();
+        DublicatingEmailException exception = assertThrows(DublicatingEmailException.class,
+                () -> userService.create(newUser));
+        assertTrue(exception.getMessage().contains(user1.getEmail()));
+    }
+
+    @Test
+    void whenDeleteById_thenUserIsDeleted() {
+        userService.deleteById(user1.getId());
+        assertThrows(NotFoundException.class, () -> userService.getById(user1.getId()));
     }
 }

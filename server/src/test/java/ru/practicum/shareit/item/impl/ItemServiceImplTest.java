@@ -11,11 +11,15 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.enums.BookingStatus;
+import ru.practicum.shareit.error.exception.BookingException;
+import ru.practicum.shareit.error.exception.NotFoundException;
+import ru.practicum.shareit.error.exception.OwnerException;
 import ru.practicum.shareit.item.Item;
-import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.comment.CommentRequestDto;
 import ru.practicum.shareit.item.comment.CommentResponseDto;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemOwnerDto;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
@@ -42,44 +46,38 @@ class ItemServiceImplTest {
     private User user;
     private User booker;
     private Item item1;
+    private Item item2;
 
     @BeforeEach
     void setup() {
-        user = User.builder()
+        user = userRepository.save(User.builder()
                 .email("test@mail.com")
                 .name("Sam")
-                .build();
+                .build());
 
-        booker = User.builder()
+        booker = userRepository.save(User.builder()
                 .email("test2@mail.com")
                 .name("Booker")
-                .build();
+                .build());
 
-        item1 = Item.builder()
+        item1 = itemRepository.save(Item.builder()
                 .owner(user)
                 .name("item1")
                 .description("description1")
                 .available(true)
-                .build();
+                .build());
+
+        item2 = itemRepository.save(Item.builder()
+                .owner(user)
+                .name("Item2")
+                .description("Desc2")
+                .available(true)
+                .build());
     }
 
     @Test
     void whenGetUserItems_thenReturnCorrectItems() {
-
-        user = userRepository.save(user);
-
-        Item item2 = Item.builder()
-                .owner(user)
-                .name("item2")
-                .description("description2")
-                .available(true)
-                .build();
-
-        itemRepository.saveAll(List.of(item1, item2));
-
-        List<Item> items = itemService.getAll(user.getId())
-                .stream().map(ItemMapper::toItem).toList();
-
+        List<ItemDto> items = itemService.getAll(user.getId());
         assertNotNull(items);
         assertEquals(2, items.size());
         assertTrue(items.stream().anyMatch(i -> i.getName().equals(item1.getName())));
@@ -88,11 +86,6 @@ class ItemServiceImplTest {
 
     @Test
     void whenCreateComment_thenReturnCorrectCommentRespondDto() {
-
-        user = userRepository.save(user);
-        booker = userRepository.save(booker);
-        item1 = itemRepository.save(item1);
-
         LocalDateTime now = LocalDateTime.now().minusSeconds(3);
 
         Booking booking = Booking.builder()
@@ -114,5 +107,113 @@ class ItemServiceImplTest {
         assertNotNull(responseDto);
         assertEquals(responseDto.getAuthorName(), booker.getName());
         assertEquals(responseDto.getText(), comment.getText());
+    }
+
+    @Test
+    void whenEditItem_thenReturnEditedItemDto() {
+        ItemDto update = ItemDto.builder()
+                .name("UpdatedName")
+                .description("UpdatedDescription")
+                .available(false)
+                .build();
+
+        ItemDto updatedDto = itemService.editOne(item1.getId(), update, user.getId());
+
+        assertNotNull(updatedDto);
+        assertEquals("UpdatedName", updatedDto.getName());
+        assertEquals("UpdatedDescription", updatedDto.getDescription());
+        assertFalse(updatedDto.getAvailable());
+    }
+
+    @Test
+    void whenEditItemWithNonOwner_thenThrowOwnerException() {
+        ItemDto update = ItemDto.builder()
+                .name("NewName")
+                .build();
+
+        assertThrows(OwnerException.class, () -> itemService.editOne(item1.getId(), update, booker.getId()));
+    }
+
+    @Test
+    void whenSearchByText_thenReturnMatchingItems() {
+        List<ItemDto> result = itemService.searchByText("item1");
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(item1.getName(), result.get(0).getName());
+    }
+
+    @Test
+    void whenSearchByEmptyText_thenReturnEmptyList() {
+        List<ItemDto> result = itemService.searchByText("   ");
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void whenCreateItem_thenReturnCreatedItemDto() {
+        ItemDto newItemDto = ItemDto.builder()
+                .name("NewItem")
+                .description("NewDescription")
+                .available(true)
+                .build();
+
+        ItemDto created = itemService.create(newItemDto, user.getId());
+
+        assertNotNull(created);
+        assertEquals("NewItem", created.getName());
+        assertEquals("NewDescription", created.getDescription());
+        assertTrue(created.getAvailable());
+    }
+
+    @Test
+    void whenGetByIdAndOwnerId_thenReturnItemOwnerDtoWithBookingsAndComments() {
+        LocalDateTime now = LocalDateTime.now();
+
+        Booking pastBooking = Booking.builder()
+                .item(item1)
+                .booker(booker)
+                .status(BookingStatus.APPROVED)
+                .start(now.minusDays(3))
+                .end(now.minusDays(2))
+                .build();
+        bookingRepository.save(pastBooking);
+
+        Booking futureBooking = Booking.builder()
+                .item(item1)
+                .booker(booker)
+                .status(BookingStatus.APPROVED)
+                .start(now.plusDays(1))
+                .end(now.plusDays(2))
+                .build();
+        bookingRepository.save(futureBooking);
+
+        CommentRequestDto commentRequest = CommentRequestDto.builder()
+                .text("Nice item")
+                .build();
+        CommentResponseDto commentResponse = itemService.createComment(commentRequest, booker.getId(), item1.getId());
+        assertNotNull(commentResponse);
+
+        ItemOwnerDto ownerDto = itemService.getByIdAndOwnerId(item1.getId(), user.getId());
+        assertNotNull(ownerDto);
+
+        assertEquals(pastBooking.getEnd(), ownerDto.getLastBooking());
+        assertEquals(futureBooking.getStart(), ownerDto.getNextBooking());
+
+        assertNotNull(ownerDto.getComments());
+        assertFalse(ownerDto.getComments().isEmpty());
+        assertTrue(ownerDto.getComments().stream().anyMatch(c -> c.getText().equals("Nice item")));
+    }
+
+    @Test
+    void whenGetByIdAndOwnerIdWithNonExistingItem_thenThrowNotFoundException() {
+        assertThrows(NotFoundException.class, () -> itemService.getByIdAndOwnerId(999L, user.getId()));
+    }
+
+    @Test
+    void whenCreateCommentWithoutBooking_thenThrowBookingException() {
+        CommentRequestDto commentRequest = CommentRequestDto.builder()
+                .text("Should fail")
+                .build();
+        assertThrows(BookingException.class, () -> itemService.createComment(commentRequest, booker.getId(), item2.getId()));
     }
 }
