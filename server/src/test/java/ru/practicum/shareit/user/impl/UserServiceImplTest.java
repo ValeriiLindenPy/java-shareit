@@ -87,6 +87,16 @@ class UserServiceImplTest {
     }
 
     @Test
+    void whenEditByIdWithWromgUser_thenThrowNotFoundException() {
+        UserDto update = UserDto.builder()
+                .email(user2.getEmail())
+                .build();
+
+        NotFoundException exception = assertThrows(NotFoundException.class,
+                () -> userService.editById(999L, update));
+    }
+
+    @Test
     void whenCreateUser_thenReturnCreatedUserDto() {
         UserDto newUser = UserDto.builder()
                 .name("Bob")
