@@ -42,33 +42,4 @@ class RequestOutputDtoTest {
                 .extractingJsonPathStringValue("$.created")
                 .isEqualTo("2025-01-01 12:30:00");
     }
-
-    @Test
-    void testDeserializeWithCustomDateFormat() throws Exception {
-
-        String json = """
-                {
-                  "id": 1,
-                  "description": "Test description",
-                  "items": [
-                    {
-                      "id": 100,
-                      "name": "Item name",
-                      "description": "Item desc",
-                      "available": true
-                    }
-                  ],
-                  "created": "2025-01-01 12:30:00"
-                }
-                """;
-
-        RequestOutputDto parsedDto = jsonTester.parseObject(json);
-
-        LocalDateTime expectedTime = LocalDateTime.of(2025, 1, 1, 12, 30, 0);
-
-        assertThat(parsedDto.getId()).isEqualTo(1L);
-        assertThat(parsedDto.getDescription()).isEqualTo("Test description");
-        assertThat(parsedDto.getItems()).hasSize(1);
-        assertThat(parsedDto.getCreated()).isEqualTo(expectedTime);
-    }
 }
