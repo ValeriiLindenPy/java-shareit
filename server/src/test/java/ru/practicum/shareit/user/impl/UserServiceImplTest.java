@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-
 @ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -42,7 +41,6 @@ class UserServiceImplTest {
                 .name("Sam")
                 .build();
 
-        // Ensure save() always returns a valid user
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
             User savedUser = invocation.getArgument(0);
             if (savedUser == null) {
@@ -57,7 +55,6 @@ class UserServiceImplTest {
 
         user = userRepository.save(user);
     }
-
 
     @Test
     void whenEditById_ReturnNewDataUser() {

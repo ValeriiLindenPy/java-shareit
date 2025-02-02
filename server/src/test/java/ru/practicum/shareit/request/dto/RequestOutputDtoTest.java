@@ -71,5 +71,4 @@ class RequestOutputDtoTest {
         assertThat(parsedDto.getItems()).hasSize(1);
         assertThat(parsedDto.getCreated()).isEqualTo(expectedTime);
     }
-
 }

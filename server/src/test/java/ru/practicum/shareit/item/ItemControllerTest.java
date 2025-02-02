@@ -32,7 +32,6 @@ class ItemControllerTest {
     private ItemDto item1;
     private ItemDto item2;
 
-
     @BeforeEach
     void setUp() {
         user = UserDto.builder()

@@ -19,8 +19,6 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.List;
 
-
-
 @JsonTest
 class ItemOwnerDtoTest {
 
@@ -42,7 +40,6 @@ class ItemOwnerDtoTest {
         LocalDateTime commentCreated = LocalDateTime.of(2025, 2, 2, 15, 15, 0);
         LocalDateTime lastBooking = LocalDateTime.of(2025, 2, 2, 13, 30, 0);
         LocalDateTime nextBooking = LocalDateTime.of(2025, 2, 5, 10, 15, 0);
-
 
         CommentResponseDto comment = CommentResponseDto.builder()
                 .id(1L)

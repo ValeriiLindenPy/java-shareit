@@ -20,7 +20,6 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-
 @ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -40,8 +39,6 @@ class ItemRequestServiceImplTest {
     private User requester;
     private Item item1;
     private ItemRequest request;
-
-
 
     @BeforeEach
     void setup() {
@@ -80,5 +77,4 @@ class ItemRequestServiceImplTest {
         assertNotNull(requests);
         assertTrue(requests.stream().anyMatch(r -> r.getDescription().equals(request.getDescription())));
     }
-
 }

@@ -24,7 +24,6 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-
 @ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest

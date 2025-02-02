@@ -93,7 +93,6 @@ class ItemServiceImplTest {
         booker = userRepository.save(booker);
         item1 = itemRepository.save(item1);
 
-
         LocalDateTime now = LocalDateTime.now().minusSeconds(3);
 
         Booking booking = Booking.builder()
