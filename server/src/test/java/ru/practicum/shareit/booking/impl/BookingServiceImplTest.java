@@ -50,7 +50,6 @@ class BookingServiceImplTest {
     @BeforeEach
     void setup() {
         now = LocalDateTime.now();
-        // Сначала сохраняем пользователей
         user = userRepository.save(User.builder()
                 .email("test@mail.com")
                 .name("Sam")
@@ -61,7 +60,6 @@ class BookingServiceImplTest {
                 .name("Booker")
                 .build());
 
-        // Сначала сохраняем item1, чтобы он стал persistent
         item1 = itemRepository.save(Item.builder()
                 .owner(user)
                 .name("item1")
@@ -69,7 +67,6 @@ class BookingServiceImplTest {
                 .available(true)
                 .build());
 
-        // Сохраняем второй item
         item2 = itemRepository.save(Item.builder()
                 .owner(user)
                 .name("Item2")
@@ -77,7 +74,6 @@ class BookingServiceImplTest {
                 .available(true)
                 .build());
 
-        // Создаем бронирования. Теперь item1 и item2 уже сохранены.
         Booking pastBooking = Booking.builder()
                 .item(item1)
                 .booker(booker)
