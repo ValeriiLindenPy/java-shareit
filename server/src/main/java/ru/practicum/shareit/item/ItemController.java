@@ -2,6 +2,7 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.comment.CommentRequestDto;
 import ru.practicum.shareit.item.comment.CommentResponseDto;
@@ -43,12 +44,14 @@ public class ItemController {
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public ItemDto create(@RequestBody ItemDto item, @RequestHeader("X-Sharer-User-Id") Long userId) {
         log.info("create item for userId - {}, ItemDto - {}", userId, item.toString());
         return itemService.create(item, userId);
     }
 
     @PostMapping("/{itemId}/comment")
+    @ResponseStatus(HttpStatus.CREATED)
     public CommentResponseDto createComment(@RequestBody CommentRequestDto commentRequestDto,
                                             @RequestHeader("X-Sharer-User-Id") Long userId,
                                             @PathVariable Long itemId) {
