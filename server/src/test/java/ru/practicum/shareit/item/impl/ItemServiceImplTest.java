@@ -102,7 +102,7 @@ class ItemServiceImplTest {
                 .text("Comment")
                 .build();
 
-        CommentResponseDto responseDto = itemService.createComment(comment,booker.getId(), item1.getId());
+        CommentResponseDto responseDto = itemService.createComment(comment, booker.getId(), item1.getId());
 
         assertNotNull(responseDto);
         assertEquals(responseDto.getAuthorName(), booker.getName());
@@ -149,7 +149,7 @@ class ItemServiceImplTest {
                 .name("NewName")
                 .build();
 
-        assertThrows(NotFoundException.class, () -> itemService.editOne(item1.getId(), update,999L));
+        assertThrows(NotFoundException.class, () -> itemService.editOne(item1.getId(), update, 999L));
     }
 
     @Test
@@ -243,7 +243,8 @@ class ItemServiceImplTest {
 
         try {
             itemService.createComment(commentRequest, booker.getId(), item1.getId());
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         ItemOwnerDto dto = itemService.getByIdAndOwnerId(item1.getId(), booker.getId());
 
