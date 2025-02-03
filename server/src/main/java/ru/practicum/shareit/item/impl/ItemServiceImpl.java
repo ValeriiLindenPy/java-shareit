@@ -106,26 +106,26 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional
     public CommentResponseDto createComment(CommentRequestDto commentRequestDto, Long userId, Long itemId) {
-        log.info("Create comment starts ...");
+        log.debug("Create comment starts ...");
         User author = userRepository.findById(userId).orElseThrow(
                 () -> new NotFoundException("User with id - %d not found".formatted(userId))
         );
 
-        log.info("author id - {}", author.getId());
+        log.debug("author id - {}", author.getId());
 
         Item item = itemRepository.findById(itemId).orElseThrow(
                 () -> new NotFoundException("Item with id - %d not found".formatted(itemId))
         );
 
-        log.info("item id - {}", item.getId());
+        log.debug("item id - {}", item.getId());
 
-        log.info("Check all bookings ...");
+        log.debug("Check all bookings ...");
         bookingRepository.findAll().forEach(
-                booking -> log.info("booking - {}", booking.toString())
+                booking -> log.debug("booking - {}", booking.toString())
         );
 
         LocalDateTime queryTime = LocalDateTime.now();
-        log.info("Using time for comment check: {}", queryTime);
+        log.debug("Using time for comment check: {}", queryTime);
 
         bookingRepository.findForComments(author.getId(), item.getId(), BookingStatus.APPROVED, queryTime).orElseThrow(
                 () -> {
@@ -146,11 +146,16 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemOwnerDto getByIdAndOwnerId(Long id, Long userId) {
-
         Item item = itemRepository.findById(id).orElseThrow(
-                () -> new NotFoundException("Item with id - %d not found"
-                        .formatted(id))
+                () -> new NotFoundException("Item with id - %d not found".formatted(id))
         );
+
+        if (!item.getOwner().getId().equals(userId)) {
+            ItemOwnerDto itemOwnerDto = ItemMapper.toItemOwnerDto(item, null, null);
+            itemOwnerDto.setComments(commentRepository.findByItemId(item.getId())
+                    .stream().map(CommentMapper::toRespondDto).toList());
+            return itemOwnerDto;
+        }
 
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime lastBookingDate = bookingRepository.findLastBooking(item.getId(), now)
@@ -162,7 +167,6 @@ public class ItemServiceImpl implements ItemService {
                 .orElse(null);
 
         ItemOwnerDto itemOwnerDto = ItemMapper.toItemOwnerDto(item, lastBookingDate, nextBookingDate);
-
         itemOwnerDto.setComments(commentRepository.findByItemId(item.getId())
                 .stream().map(CommentMapper::toRespondDto).toList());
 
