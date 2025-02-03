@@ -135,11 +135,29 @@ class ItemServiceImplTest {
     }
 
     @Test
+    void whenEditItemWithNonItem_thenThrowNotFoundException() {
+        ItemDto update = ItemDto.builder()
+                .name("NewName")
+                .build();
+
+        assertThrows(NotFoundException.class, () -> itemService.editOne(999L, update, booker.getId()));
+    }
+
+    @Test
+    void whenEditItemWithNonUser_thenThrowNotFoundException() {
+        ItemDto update = ItemDto.builder()
+                .name("NewName")
+                .build();
+
+        assertThrows(NotFoundException.class, () -> itemService.editOne(item1.getId(), update,999L));
+    }
+
+    @Test
     void whenSearchByText_thenReturnMatchingItems() {
         List<ItemDto> result = itemService.searchByText("item1");
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals(item1.getName(), result.get(0).getName());
+        assertEquals(item1.getName(), result.getFirst().getName());
     }
 
     @Test
@@ -215,5 +233,26 @@ class ItemServiceImplTest {
                 .text("Should fail")
                 .build();
         assertThrows(BookingException.class, () -> itemService.createComment(commentRequest, booker.getId(), item2.getId()));
+    }
+
+    @Test
+    void whenGetByIdAndOwnerIdForNonOwner_thenReturnDtoWithoutBookingInfo() {
+        CommentRequestDto commentRequest = CommentRequestDto.builder()
+                .text("Отличный товар!")
+                .build();
+
+        try {
+            itemService.createComment(commentRequest, booker.getId(), item1.getId());
+        } catch (Exception ignored) {}
+
+        ItemOwnerDto dto = itemService.getByIdAndOwnerId(item1.getId(), booker.getId());
+
+        assertNotNull(dto);
+        assertNull(dto.getLastBooking(), "lastBooking должна быть null для не-владельца");
+        assertNull(dto.getNextBooking(), "nextBooking должна быть null для не-владельца");
+
+        if (dto.getComments() != null && !dto.getComments().isEmpty()) {
+            assertTrue(dto.getComments().stream().anyMatch(c -> c.getText().equals("Отличный товар!")));
+        }
     }
 }
