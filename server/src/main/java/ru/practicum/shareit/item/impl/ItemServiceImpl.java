@@ -87,20 +87,14 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     public ItemDto create(ItemDto itemDto, Long userId) {
         User owner = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("User with id - %d not found".formatted(userId)));
+                .orElseThrow(() -> new NotFoundException(String.format("User with id - %d not found", userId)));
 
-        ItemRequest request = null;
-        if (itemDto.getRequestId() != null) {
-            request = requestRepository.findById(itemDto.getRequestId())
-                    .orElseThrow(() -> new NotFoundException("Request with id - %d not found".formatted(itemDto.getRequestId())));
-        }
+        ItemRequest request = (itemDto.getRequestId() == null) ? null :
+                requestRepository.findById(itemDto.getRequestId())
+                        .orElseThrow(() -> new NotFoundException(String.format("Request with id - %d not found", itemDto.getRequestId())));
 
-        Item item = ItemMapper.toItem(itemDto);
-        item.setOwner(owner);
-        item.setRequest(request);
-
-        Item savedItem = itemRepository.save(item);
-        return ItemMapper.toItemDto(savedItem);
+        Item item = ItemMapper.toItem(itemDto, owner, request);
+        return ItemMapper.toItemDto(itemRepository.save(item));
     }
 
     @Override

@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingRequestDto;
 import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import ru.practicum.shareit.booking.enums.BookingState;
-import ru.practicum.shareit.error.ValidationMarker;
+
 
 import java.util.List;
 
@@ -19,7 +19,7 @@ public class BookingController {
     private final BookingService bookingService;
 
     @PostMapping
-    public BookingResponseDto create(@Validated(ValidationMarker.OnCreate.class) @RequestBody BookingRequestDto bookingRequestDto,
+    public BookingResponseDto create(@RequestBody BookingRequestDto bookingRequestDto,
                                      @RequestHeader("X-Sharer-User-Id") Long userId) {
         log.info("Creating booking {}, userId={}", bookingRequestDto.toString(), userId);
         BookingResponseDto response = bookingService.create(bookingRequestDto, userId);
