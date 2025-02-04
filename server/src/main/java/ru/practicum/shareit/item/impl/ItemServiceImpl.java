@@ -139,6 +139,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ItemOwnerDto getByIdAndOwnerId(Long id, Long userId) {
         Item item = itemRepository.findById(id).orElseThrow(
                 () -> new NotFoundException("Item with id - %d not found".formatted(id))
